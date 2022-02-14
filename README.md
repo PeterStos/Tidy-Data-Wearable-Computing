@@ -15,3 +15,5 @@ The data used on the project can be download from https://d396qusza40orc.cloudfr
 - y_train / y_test: Training labels.  
 - X_train / X_test: Training set.  
   
+To see the whole code open the file [TidyData_CodeBool.md]
+(https://github.com/PeterStos/Tidy-Data-Wearable-Computing/blob/main/TidyData_CodeBook.md)
