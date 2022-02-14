@@ -1,9 +1,7 @@
-
-
 # Load libraries
-install.packages("dplyr")
-install.packages("plyr")
-install.packages("tidyr")
+#install.packages("dplyr")
+#install.packages("plyr")
+#install.packages("tidyr")
 #install.packages("tidyverse")
 library(dplyr)
 library(plyr)
@@ -80,9 +78,11 @@ group_train_test <- group_by(train_test_mean_std, subject, activity)
 
 result<- aggregate(group_train_test[,3:38], list(subject = train_test_mean_std$subject, activity = train_test_mean_std$activity), mean)
 result <- as_tibble(result)
-result_arranged <- (arrange(test2, subject))
+result_arranged <- (arrange(result, subject))
 result_arranged
 
+# Create file to upload in Coursera
+write.table(result_arranged, file = "run_analysis_result.txt", row.names = FALSE) 
 
 
 
