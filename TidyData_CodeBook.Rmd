@@ -1,18 +1,127 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Getting and Cleaning Data Course Project"
+date: "10/02/2022"
 ---
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
-```{r}
-plot(cars)
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+```{r libraries, include=FALSE}
+library(dplyr)
+library(plyr)
+library(tidyr)
+library(tidyverse)
+library(stats)
+```
+  
+  
+#### Loading files from TEST volunteers
+  
+Firstly the directory where **TEST** files were located was set as working directory. 
+```{r Working directory test, include=FALSE}
+knitr::opts_knit$set(root.dir = "C:/Users/peter/Documents/DataScience/Coursera/Cleaning Data/TidyData/getdata_projectfiles_UCI HAR Dataset/UCI HAR Dataset/test")
+```
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+The **X_test.txt** was read as table, adding the column names from the file **features.txt**. 
+```{r}
+test_col_names <- read.table("features.txt", header = FALSE)
+col_names <- c(test_col_names[,2])
+x_test_df <- read.table("X_test.txt", col.names = col_names, header = FALSE)
+```
+  
+  
+#### Subjects and Activities
+  
+The following code reads **subjects** (volunteers) from subject_test file
+```{r}
+subject_test <- read.table("subject_test.txt", col.names = "subject", header = FALSE)
+```
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+Read column **activity** using y_test file:
+```{r}
+activity_test <- read.table("y_test.txt", col.names = "activity", header = FALSE)
+activity_labels_test <- read.table("activity_labels.txt", col.names = c("activity", "labels"), header = FALSE)
+```
+
+Merge the columns activity and subject to the dataset **x_test_df**:
+```{r}
+x_test_df <- data.frame(x_test_df, subject_test)
+x_test_df <- data.frame(x_test_df, activity_test)
+```
+  
+  
+#### Creating dataset for TRAINING volunteers
+  
+```{r Working directory trainig, include=FALSE}
+knitr::opts_knit$set(root.dir = "C:/Users/peter/Documents/DataScience/Coursera/Cleaning Data/TidyData/getdata_projectfiles_UCI HAR Dataset/UCI HAR Dataset/train")
+```
+
+The steps taken are the same as for TEST volunteers:
+```{r}
+train_col_names <- read.table("features.txt", header = FALSE)
+col_names <- c(train_col_names[,2])
+x_train_df <- read.table("X_train.txt", col.names = col_names, header = FALSE)
+
+subject_train <- read.table("subject_train.txt", col.names = "subject", header = FALSE)
+
+activity_train <- read.table("y_train.txt", col.names = "activity", header = FALSE)
+activity_labels_train <- read.table("activity_labels.txt", col.names = c("activity", "labels"), header = FALSE)
+
+x_train_df <- data.frame(x_train_df, subject_train)
+x_train_df <- data.frame(x_train_df, activity_train)
+```
+  
+  
+#### Merging Test and Training datasets
+  
+The dataset *x_train_df* and *x_test_df* are merged to create one single dataset with all volunteers.  
+This correspond to the step 1:  
+**1. Merges the training and the test sets to create one data set**.
+```{r}
+train_test_df <- rbind(x_train_df, x_test_df)
+train_test_df <- as_tibble(train_test_df)
+```
+  
+  
+#### Extraction of mean and standard deviation for each measurement
+  
+The criteria adopted to select the columns with mean and standard deviation was to select all column names that could contain the word *mean* or *std*, plus subject and activity.  
+This step correspond to the step 2:  
+**2.Extracts only the measurements on the mean and standard deviation for each measurement**. 
+```{r}
+train_test_mean_std <- select(train_test_df, contains(c("subject", "activity", "mean", "std"), ignore.case = TRUE))
+head(train_test_mean_std)
+```
+  
+  
+#### Rename activity numbers to names
+  
+This step correspond to the step 2:  
+**3.Uses descriptive activity names to name the activities in the data set**  
+```{r}
+train_test_mean_std$activity[train_test_mean_std$activity == "1"] <- activity_labels_test$labels[1] 
+train_test_mean_std$activity[train_test_mean_std$activity == "2"] <- activity_labels_test$labels[2]
+train_test_mean_std$activity[train_test_mean_std$activity == "3"] <- activity_labels_test$labels[3]
+train_test_mean_std$activity[train_test_mean_std$activity == "4"] <- activity_labels_test$labels[4]
+train_test_mean_std$activity[train_test_mean_std$activity == "5"] <- activity_labels_test$labels[5]
+train_test_mean_std$activity[train_test_mean_std$activity == "6"] <- activity_labels_test$labels[6]
+```
+
+#### Avarage of each variable for activity and subject  
+  
+First the data set was grouped by subject and activity
+```{r}
+group_train_test <- group_by(train_test_mean_std, subject, activity)
+```
+
+Then a *result* dataset was created to calculate the mean by activity and subject
+**5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.**  
+```{r}
+result <- aggregate(group_train_test[,3:38], list(subject = train_test_mean_std$subject, activity = train_test_mean_std$activity), mean)
+result <- as_tibble(result)
+result_arranged <- (arrange(result, subject))
+head(result_arranged,24)
+```
+
+
