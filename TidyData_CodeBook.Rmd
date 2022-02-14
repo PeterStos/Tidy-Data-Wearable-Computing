@@ -1,6 +1,10 @@
 ---
 title: "Getting and Cleaning Data Course Project"
 date: "10/02/2022"
+output:
+  html_document:
+    keep_md: true
+    df_print: paged
 ---
   
 ```{r setup, include=FALSE}
@@ -121,7 +125,7 @@ Then a *result* dataset was created to calculate the mean by activity and subjec
 result <- aggregate(group_train_test[,3:38], list(subject = train_test_mean_std$subject, activity = train_test_mean_std$activity), mean)
 result <- as_tibble(result)
 result_arranged <- (arrange(result, subject))
-head(result_arranged,24)
+head(result_arranged, 24)
 ```
 
 
