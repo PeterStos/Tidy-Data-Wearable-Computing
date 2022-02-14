@@ -2,6 +2,7 @@
 title: "Getting and Cleaning Data Course Project"
 date: "10/02/2022"
 output:
+  output: rmarkdown::github_document
   html_document:
     keep_md: true
     df_print: paged
